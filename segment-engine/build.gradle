@@ -1,8 +1,8 @@
 
 dependencies {
-    compile "com.googlecode.json-simple:json-simple";
-    testCompile "com.google.guava:guava";
-    testCompile "org.hamcrest:hamcrest-core";
-    testCompile "org.hamcrest:hamcrest-library";
-    testCompile "org.mockito:mockito-core";
+    compile "com.googlecode.json-simple:json-simple"
+    testCompile "com.google.guava:guava"
+//    testCompile "org.hamcrest:hamcrest-core"
+//    testCompile "org.hamcrest:hamcrest-library"
+//    testCompile "org.mockito:mockito-core"
 }

@@ -2,10 +2,7 @@ package com.test.segments.matcher;
 
 import java.util.Set;
 
-/**
- * Created by sonegy@sk.com on 2016. 1. 14..
- * omwomw@sk.com
- */
+
 public class Condition implements Conditionable {
     private String id;
     private FieldMeta fieldMeta;
@@ -14,6 +11,7 @@ public class Condition implements Conditionable {
     private int durationDays;
     private int frequency;
     private Status status;
+    private int hashCode;
 
     public static Condition of(FieldMeta fieldMeta, ConditionSign sign, String value, int durationDays, int frequency, Status status) {
         return of(null, fieldMeta, sign, value, durationDays, frequency, status);
@@ -28,6 +26,7 @@ public class Condition implements Conditionable {
         condition.durationDays = durationDays;
         condition.frequency = frequency;
         condition.status = status;
+        condition.hashCode = condition.getHashCode();
         return condition;
     }
 
@@ -52,17 +51,6 @@ public class Condition implements Conditionable {
                 ", sign=" + sign +
                 ", value='" + value + '\'' +
                 '}';
-    }
-
-    @Override
-    public void accept(ConditionableVisitor visitor) {
-        visitor.visit(this);
-    }
-
-    @Override
-    public void giveConditionTo(ConditionableVisitor visitor) {
-
-        visitor.setCondition(this);
     }
 
     public String getId() {
@@ -126,6 +114,10 @@ public class Condition implements Conditionable {
 
     @Override
     public int hashCode() {
+        return hashCode;
+    }
+
+    private int getHashCode() {
         int result = fieldMeta != null ? fieldMeta.hashCode() : 0;
         result = 31 * result + (sign != null ? sign.hashCode() : 0);
         result = 31 * result + (value != null ? value.hashCode() : 0);

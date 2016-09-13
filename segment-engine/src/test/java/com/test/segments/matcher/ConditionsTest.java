@@ -1,6 +1,6 @@
 package com.test.segments.matcher;
 
-import com.test.segments.matcher.matcher.*;
+import com.test.segments.matcher.*;
 import org.junit.Test;
 
 import java.util.List;

@@ -1,6 +1,6 @@
 package com.test.segments.matcher;
 
-import com.test.segments.matcher.matcher.*;
+import com.test.segments.matcher.*;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;

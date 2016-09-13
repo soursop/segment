@@ -2,10 +2,9 @@ package com.test.segments.matcher;
 
 import java.util.*;
 import java.util.regex.Pattern;
+import static com.test.segments.matcher.Evaluation.*;
+import static com.test.segments.matcher.FieldMetaType.*;
 
-/**
- * Created by sonegy@sk.com on 2016. 2. 24..
- */
 public enum ConditionSign {
     CONTAINS(STRING_TYPE, CONTAINS_EVAL),
     NOT_CONTAINS(STRING_TYPE, NOT_CONTAINS_EVAL),
