@@ -20,8 +20,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class PerformanceTest {
 
-
     private static final Logger LOGGER = LoggerFactory.getLogger(PerformanceTest.class);
+
 
     @Test
     public void testListAndArrray() {
@@ -79,7 +79,6 @@ public class PerformanceTest {
     public void test() throws ParameterParsingException {
         File resource = new File(getClass().getResource("/conditions").getFile());
         if(resource.exists()) {
-            System.out.println(resource.getAbsolutePath());
             try {
                 List<String> lines = Files.readLines(resource, Charset.defaultCharset());
                 for(String json : lines) {

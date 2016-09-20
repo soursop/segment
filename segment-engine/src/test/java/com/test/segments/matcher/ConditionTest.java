@@ -34,7 +34,7 @@ public class ConditionTest {
     public void testExcapeMatch() throws Exception {
         // Given
         Condition of = Condition.of(FieldMeta.of("", FieldMetaType.STRING, "", 0), ConditionSign.CONTAINS, "커피/차||우유", 10, 1, Condition.Status.ACTIVE);
-        String[] text = {"커피/차||우유"};
+        String[] text = {DataHandler.SOURCE_HANDLER.resolve("커피/차||우유")};
         // When
         boolean match = of.match(text);
         // Then

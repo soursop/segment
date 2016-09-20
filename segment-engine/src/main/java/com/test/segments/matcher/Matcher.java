@@ -1,5 +1,6 @@
 package com.test.segments.matcher;
 
+import com.test.segments.matcher.duration.Durations;
 import com.test.segments.matcher.utils.Assert;
 
 import java.io.Serializable;
@@ -9,57 +10,39 @@ import java.util.*;
 
 public class Matcher implements Serializable {
 
-    private Map<String, Parameter> parameterMap;
-    private Map<String, Map<String, Condition>> conditionMap;
-    private Map<String, TreeMap<Integer, Set<Condition>>> conditionByDurationMap;
-    private Map<String, Set<DurationCondition>> durationConditionMap;
-    private Map<String, Map<String, Set<String>>> conditionMappingMap;
+    private final Parameter parameter;
+    private final Map<String, Condition> conditionMap;
+    private final Durations durations;
+    private Map<String, Set<String>> conditionMappingMap;
 
-    public Matcher(Parameter[] parameters) {
-        parameterMap = new HashMap<>();
+    public Matcher(Parameter parameter) {
+        this.parameter = parameter;
         conditionMap = new HashMap<>();
-        conditionByDurationMap = new HashMap<>();
-        durationConditionMap = new HashMap<>();
+        durations = new Durations();
         conditionMappingMap = new HashMap<>();
-        for (Parameter parameter : parameters) {
-            parameterMap.put(parameter.getDataSource(), parameter);
 
-            Map<String, Condition> conditionMapInDataSource = new HashMap<>();
-            TreeMap<Integer, Set<Condition>> conditionByDurationMapInDataSource = new TreeMap<>();
-            Conditions[] conditionses = parameter.getConditionses();
-            for (Conditions conditions : conditionses) {
-                for (Condition condition : conditions.getConditions()) {
-                    conditionMapInDataSource.put(condition.getId(), condition);
-                    conditionByDurationMapInDataSource = addConditionByDuration(conditionByDurationMapInDataSource, condition);
-                }
+        Conditions[] conditionses = parameter.getConditionses();
+        for (Conditions conditions : conditionses) {
+            for (Condition condition : conditions.getConditions()) {
+                conditionMap.put(condition.getId(), condition);
+                durations.addCondition(condition);
             }
-            conditionMap.put(parameter.getDataSource(), conditionMapInDataSource);
-            Set<DurationCondition> durationConditions = getDurationConditions(parameter, conditionByDurationMapInDataSource);
-            conditionByDurationMapInDataSource = getConditionByValidDuration(conditionByDurationMapInDataSource);
-//            for(Map.Entry<Integer, Set<Condition>> entry : conditionByDurationMapInDataSource.entrySet()) {
-//                for(Condition condition : entry.getValue()) {
-//                    System.out.println(String.format("key(%d) duration(%s) %s", entry.getKey(), condition.getDurationDays(), condition.getId()));
-//                }
-//            }
-            durationConditionMap.put(parameter.getDataSource(), durationConditions);
-            conditionByDurationMap.put(parameter.getDataSource(), conditionByDurationMapInDataSource);
         }
+        durations.resolve(parameter);
     }
 
     /**
      * return same hash code ids
-     * @param dataSource
      * @param id condition id
      * @return
      */
-    public Set<String> getEqualsConditionId(String dataSource, String id) {
-        if (conditionMappingMap.containsKey(dataSource)) {
-            return findMatchedConditionId(dataSource, id);
+    public Set<String> getEqualsConditionId(String id) {
+        if (conditionMappingMap != null) {
+            return findMatchedConditionId(id);
         }
 
-        Map<String, Condition> conditionMapInDataSource = findCorrectConditionMapInDataSource(dataSource);
         HashMap<Integer, Set<String>> conditionHashCodeMap = new HashMap<>();
-        for (Map.Entry<String, Condition> entry : conditionMapInDataSource.entrySet()) {
+        for (Map.Entry<String, Condition> entry : conditionMap.entrySet()) {
             int hashCode = entry.getValue().hashCode();
             String conditionId = entry.getKey();
             if (conditionHashCodeMap.containsKey(hashCode)) {
@@ -72,67 +55,18 @@ public class Matcher implements Serializable {
         }
 
         HashMap<String, Set<String>> conditionHashMap = new HashMap<>();
-        for (Map.Entry<String, Condition> entry : conditionMapInDataSource.entrySet()) {
+        for (Map.Entry<String, Condition> entry : conditionMap.entrySet()) {
             int hashCode = entry.getValue().hashCode();
             String conditionId = entry.getKey();
             conditionHashMap.put(conditionId, conditionHashCodeMap.get(hashCode));
         }
-        conditionMappingMap.put(dataSource, conditionHashMap);
+        conditionMappingMap = conditionHashMap;
 
-        return findMatchedConditionId(dataSource, id);
+        return findMatchedConditionId(id);
     }
 
-    private Set<String> findMatchedConditionId(String dataSource, String id) {
-        Map<String, Set<String>> matchedConditionId = findMatchedConditionId(dataSource);
-        return Assert.notEmpty("Condition Mapping is empty from matchedConditionId at id", matchedConditionId.get(id));
-    }
-
-    private Map<String, Set<String>> findMatchedConditionId(String dataSource) {
-        return Assert.notEmpty("Condition Mapping is empty from conditionMappingMap at DataSource", conditionMappingMap.get(dataSource));
-    }
-
-    private Set<DurationCondition> getDurationConditions(Parameter parameter, TreeMap<Integer, Set<Condition>> conditionByDurationMapInDataSource) {
-        Set<DurationCondition> durationConditions = new HashSet<>();
-        int prevDuration = -1;
-        for (int duration : conditionByDurationMapInDataSource.keySet()) {
-            if (prevDuration < 0) {
-                DurationCondition durationCondition = new DurationCondition(parameter, duration);
-//                System.out.println(String.format("prev:%d now:%d %s", prevDuration, duration, durationCondition.toString()));
-                durationConditions.add(durationCondition);
-                prevDuration = duration;
-                continue;
-            }
-            DurationCondition durationCondition = new DurationCondition(parameter, prevDuration, duration);
-//            System.out.println(String.format("prev:%d now:%d %s", prevDuration, duration, durationCondition.toString()));
-            durationConditions.add(durationCondition);
-            prevDuration = duration;
-
-        }
-        return durationConditions;
-    }
-
-    private TreeMap<Integer, Set<Condition>> getConditionByValidDuration(TreeMap<Integer, Set<Condition>> conditionByDurationMapInDataSource) {
-        TreeMap<Integer, Set<Condition>> conditionByDurationMap = new TreeMap<>();
-        for(Map.Entry<Integer, Set<Condition>> entry : conditionByDurationMapInDataSource.entrySet()) {
-            conditionByDurationMap.put(entry.getKey(), entry.getValue());
-            for(Map.Entry<Integer, Set<Condition>> subEntry : conditionByDurationMapInDataSource.entrySet()) {
-                if (entry.getKey() < subEntry.getKey()) {
-                    conditionByDurationMap.get(entry.getKey()).addAll(subEntry.getValue());
-                }
-            }
-        }
-        return conditionByDurationMap;
-    }
-
-    private TreeMap<Integer, Set<Condition>> addConditionByDuration(TreeMap<Integer, Set<Condition>> conditionByDurationMapInDataSource, Condition condition) {
-        if (conditionByDurationMapInDataSource.containsKey(condition.getDurationDays()) == false) {
-            Set<Condition> conditionsSet = new HashSet<>();
-            conditionsSet.add(condition);
-            conditionByDurationMapInDataSource.put(condition.getDurationDays(), conditionsSet);
-            return conditionByDurationMapInDataSource;
-        }
-        conditionByDurationMapInDataSource.get(condition.getDurationDays()).add(condition);
-        return conditionByDurationMapInDataSource;
+    private Set<String> findMatchedConditionId(String id) {
+        return Assert.notEmpty("Condition Mapping is empty from matchedConditionId at id", conditionMappingMap.get(id));
     }
 
     @Deprecated
@@ -171,38 +105,16 @@ public class Matcher implements Serializable {
         conditionSet.add(conditionId);
     }
 
-    private Map<String, Condition> findCorrectConditionMapInDataSource(String dataSource) {
-        Map<String, Condition> conditionMapInDataSource = conditionMap.get(dataSource);
-        Assert.notEmpty("conditionMap is null in dataSource", conditionMapInDataSource);
-        return conditionMapInDataSource;
-    }
-
-    private Set<Condition> findCorrectConditionByDurationMapInDataSource(String dataSource, int durationDays) {
-        Map<Integer, Set<Condition>> conditionByDurationMapInDataSource = conditionByDurationMap.get(dataSource);
-        Assert.notEmpty("conditionByDurationMap is null in dataSource", conditionByDurationMapInDataSource);
-        Set<Condition> conditions = conditionByDurationMapInDataSource.get(durationDays);
-        Assert.notEmpty("conditionByDurationMapInDataSource is null in darationDays("+durationDays+")", conditions);
-        return conditions;
-    }
-
-
-    private Parameter findParameter(String dataSource) {
-        return Assert.notEmpty("Parameter is empty at DataSource", parameterMap.get(dataSource));
-    }
-
     /**
      * map 에서 Condition Id List를 받아 올바른 conditions ID List를 반환한다.
      *
-     * @param dataSource
      * @param conditionIds
      * @return
      */
-    public ConditionsIds findConditionsIds(String dataSource, String[] conditionIds) {
-        Map<String, Condition> conditionMapInDataSource = findCorrectConditionMapInDataSource(dataSource);
+    public ConditionsIds findConditionsIds(String[] conditionIds) {
 //        Set<String> frequencyConditionByIds = findFrequencyConditionByIds(conditionIds, conditionMapInDataSource);
-        FilteredCondition filteredCondition = new FilteredCondition(conditionIds, conditionMapInDataSource);
+        FilteredCondition filteredCondition = new FilteredCondition(conditionIds, conditionMap);
 
-        Parameter parameter = findParameter(dataSource);
         Conditions[] conditionses = parameter.getConditionses();
 
         ConditionsIds conditionsIds = new ConditionsIds(filteredCondition.getConditionIdsSet());
@@ -224,19 +136,14 @@ public class Matcher implements Serializable {
     /**
      * map 에서 log를 받아 매칭된 Condition Id List 를 반환한다
      *
-     * @param dataSource
      * @param rows
      * @param date 날짜
      * @return
      */
-    public MapConditionIds findConditionIds(String dataSource, String[] rows, int date) throws ParseException {
+    public MapConditionIds findConditionIds(String[] rows, int date) throws ParseException {
         MapConditionIds conditionIds = new MapConditionIds();
-        int durationDays = getDurationDays(dataSource, date);
-        if (durationDays < 0) {
-            return conditionIds;
-        }
-        Set<Condition> conditionMapInDataSource = findCorrectConditionByDurationMapInDataSource(dataSource, durationDays);
-        for (Condition condition : conditionMapInDataSource) {
+        Set<Condition> conditionMap = durations.findCondition(date);
+        for (Condition condition : conditionMap) {
             if (condition.match(rows) == false) {
                 continue;
             }
@@ -247,18 +154,6 @@ public class Matcher implements Serializable {
             conditionIds.addConditionId(condition.getId());
         }
         return conditionIds;
-    }
-
-    private int getDurationDays(String dataSource, int date) {
-        Set<DurationCondition> durationConditions = durationConditionMap.get(dataSource);
-        Assert.notEmpty("durationConditionMap is null in dataSource", durationConditionMap);
-        for(DurationCondition durationCondition : durationConditions) {
-            if (durationCondition.isValidDate(date)) {
-                return durationCondition.getDurationDays();
-            }
-        }
-//        System.out.println("date is null in durationConditionMap("+date+")");
-        return -1;
     }
 
 }

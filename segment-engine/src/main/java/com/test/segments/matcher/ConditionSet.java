@@ -2,9 +2,6 @@ package com.test.segments.matcher;
 
 import java.util.*;
 
-/**
- * Created by 1002707 on 2016. 7. 26..
- */
 @Deprecated
 public class ConditionSet {
 

@@ -1,6 +1,8 @@
 package com.test.segments.matcher;
 
+import java.util.Arrays;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 
 public class Condition implements Conditionable {
@@ -8,10 +10,12 @@ public class Condition implements Conditionable {
     private FieldMeta fieldMeta;
     private ConditionSign sign;
     private String value;
+    private String[] values;
     private int durationDays;
     private int frequency;
     private Status status;
     private int hashCode;
+    private static Pattern slicePattern = Pattern.compile("\\|");
 
     public static Condition of(FieldMeta fieldMeta, ConditionSign sign, String value, int durationDays, int frequency, Status status) {
         return of(null, fieldMeta, sign, value, durationDays, frequency, status);
@@ -23,6 +27,7 @@ public class Condition implements Conditionable {
         condition.fieldMeta = fieldMeta;
         condition.sign = sign;
         condition.value = value;
+        condition.values = getResolvedTarget(value);
         condition.durationDays = durationDays;
         condition.frequency = frequency;
         condition.status = status;
@@ -35,12 +40,17 @@ public class Condition implements Conditionable {
         if (index < 0 || text.length < (index + 1)) {
             return false;
         }
-        return sign.evaluate(text[index], value);
+        return sign.evaluate(text[index], values);
     }
 
     @Override
     public boolean matchByConditionIds(Set<Condition> conditionIds) {
         return conditionIds == null ? false : conditionIds.contains(this);
+    }
+
+    private static String[] getResolvedTarget(String target) {
+        target = DataHandler.TARGET_HANDLER.resolve(target);
+        return slicePattern.split(target);
     }
 
     @Override
@@ -50,6 +60,7 @@ public class Condition implements Conditionable {
                 ", field=" + fieldMeta +
                 ", sign=" + sign +
                 ", value='" + value + '\'' +
+                ", values='" + Arrays.asList(values) + '\'' +
                 '}';
     }
 

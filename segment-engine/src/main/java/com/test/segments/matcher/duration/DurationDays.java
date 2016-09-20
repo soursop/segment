@@ -1,18 +1,17 @@
-package com.test.segments.matcher;
+package com.test.segments.matcher.duration;
+
+import com.test.segments.matcher.Parameter;
 
 import java.io.Serializable;
 import java.text.ParseException;
 
-/**
- * Created by 1002707 on 2016. 4. 22..
- */
-public class DurationCondition implements Serializable {
+public class DurationDays implements Serializable {
     private int startDate;
     private int conditionEndDate;
     private String endDate;
     private int durationDays;
 
-    public DurationCondition(Parameter parameter, int durationDays) {
+    public DurationDays(Parameter parameter, int durationDays) {
         this.endDate = parameter.getEndDate();
         this.conditionEndDate = Integer.parseInt(this.endDate);
         this.durationDays = durationDays;
@@ -23,7 +22,7 @@ public class DurationCondition implements Serializable {
         }
     }
 
-    public DurationCondition(Parameter parameter, int prevDurationDays, int durationDays) {
+    public DurationDays(Parameter parameter, int prevDurationDays, int durationDays) {
         this.endDate = parameter.getEndDate();
         try {
             this.startDate = Integer.parseInt(parameter.getDaysAgoFromEndTime(-durationDays + 1));

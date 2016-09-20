@@ -1,8 +1,5 @@
 package com.test.segments.matcher;
 
-/**
- * Created by sonegy@sk.com on 2016. 2. 24..
- */
 public interface Evaluation {
     boolean evaluate(String source, Object target) throws Exception;
 

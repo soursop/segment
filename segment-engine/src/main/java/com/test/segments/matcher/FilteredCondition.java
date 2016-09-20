@@ -2,9 +2,6 @@ package com.test.segments.matcher;
 
 import java.util.*;
 
-/**
- * Created by 1002707 on 2016. 7. 26..
- */
 public class FilteredCondition {
 
     private Set<Condition> conditions = new HashSet<>();
@@ -54,7 +51,7 @@ public class FilteredCondition {
         conditions.add(condition);
     }
 
-    private void addConditionSet(String conditionId, Map<String, Condition> conditionMapInDataSource) {
+    private void addConditionSet(String conditionId, Map<String, Condition> conditionMap) {
         Set<Condition> conditionSet = new HashSet<>();
         StringTokenizer stringTokenizer = new StringTokenizer(conditionId, MapConditionIds.separator);
         while (stringTokenizer.hasMoreTokens()) {
@@ -62,7 +59,7 @@ public class FilteredCondition {
             if (splitConditionId.isEmpty()) {
                 continue;
             }
-            Condition condition = conditionMapInDataSource.get(splitConditionId);
+            Condition condition = conditionMap.get(splitConditionId);
             if (condition == null) {
                 continue;
             }
