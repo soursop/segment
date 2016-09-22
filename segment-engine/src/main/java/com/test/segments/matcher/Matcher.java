@@ -19,7 +19,6 @@ public class Matcher implements Serializable {
         this.parameter = parameter;
         conditionMap = new HashMap<>();
         durations = new Durations();
-        conditionMappingMap = new HashMap<>();
 
         Conditions[] conditionses = parameter.getConditionses();
         for (Conditions conditions : conditionses) {
@@ -139,12 +138,14 @@ public class Matcher implements Serializable {
      * @param rows
      * @param date 날짜
      * @return
+     * @throws ParseException
      */
-    public MapConditionIds findConditionIds(String[] rows, int date) throws ParseException {
+    public <T> MapConditionIds findConditionIds(SourceHandler<T> sourceHandler, T rows, int date) throws ParseException {
+        String[] source = sourceHandler.getSource(rows);
         MapConditionIds conditionIds = new MapConditionIds();
         Set<Condition> conditionMap = durations.findCondition(date);
         for (Condition condition : conditionMap) {
-            if (condition.match(rows) == false) {
+            if (condition.match(source) == false) {
                 continue;
             }
             if (condition.getFrequency() < 2) {

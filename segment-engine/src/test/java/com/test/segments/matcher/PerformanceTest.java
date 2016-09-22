@@ -13,11 +13,9 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Created by 1002707 on 2016. 9. 12..
- */
 public class PerformanceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PerformanceTest.class);
@@ -69,6 +67,51 @@ public class PerformanceTest {
             }
         }
         System.out.println("took list " + stopwatch.elapsed(TimeUnit.MILLISECONDS) + " ms");
+    }
+
+
+    @Test
+    public void testStringType() {
+        int repeat = 1000000000;
+        testPrimitiveStringType(repeat);
+//        testObjectStringType(repeat);
+    }
+
+    private void testPrimitiveStringType(int repeat) {
+        Random generator = new Random();
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        for(int j=0; j<repeat; j++) {
+            String target = ("string"+j).toLowerCase();
+            String source = ("string" + generator.nextInt(repeat)).toLowerCase();
+            target.contains(source);
+        }
+        System.out.println("took string " + stopwatch.elapsed(TimeUnit.MILLISECONDS) + " ms");
+    }
+
+    private void testObjectStringType(int repeat) {
+        Random generator = new Random();
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        for(int j=0; j<repeat; j++) {
+            LoweredString target = new LoweredString("substring"+j);
+            LoweredString source = new LoweredString("substring" + generator.nextInt(repeat));
+            target.contains(source);
+        }
+        System.out.println("took new object string " + stopwatch.elapsed(TimeUnit.MILLISECONDS) + " ms");
+    }
+
+    class LoweredString {
+         private final String value;
+        LoweredString(String value) {
+            this.value = value.toLowerCase();
+        }
+
+        public boolean contains(LoweredString string) {
+            return value.contains(string.getValue());
+        }
+
+        public String getValue() {
+            return value;
+        }
     }
 
     private String[] convertArray(List<String> strings) {
