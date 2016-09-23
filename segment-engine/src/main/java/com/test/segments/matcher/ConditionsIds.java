@@ -22,15 +22,57 @@ public class ConditionsIds {
         conditionsIds.add(id);
     }
 
-    public Set<String> getConditionsIdsInRow() {
-        return conditionsIdsInRow;
+    public String[] getConditionsIdsInRow() {
+        return conditionsIdsInRow.toArray(new String[conditionsIdsInRow.size()]);
     }
 
-    public Set<String> getConditionsIds() {
-        return conditionsIds;
+    public String[] getConditionsIds() {
+        return conditionsIds.toArray(new String[conditionsIds.size()]);
     }
 
-    public Set<String> getConditionIds() {
-        return conditionIds;
+    public String[] getConditionIds() {
+        return conditionIds.toArray(new String[conditionIds.size()]);
+    }
+
+    public boolean isInConditionsIds(String ... matchedConditionsIds) {
+        Set<String> ids = new HashSet<>(conditionsIds);
+        for(String conditionsId : matchedConditionsIds) {
+            if (ids.contains(conditionsId) == false) {
+                return false;
+            }
+            ids.remove(conditionsId);
+        }
+        if (ids.isEmpty()) {
+            return true;
+        }
+        throw new RuntimeException("not match " + ids);
+    }
+
+    public boolean isInConditionIds(String ... matchedConditionIds) {
+        Set<String> ids = new HashSet<>(conditionIds);
+        for(String conditionId : matchedConditionIds) {
+            if (ids.contains(conditionId) == false) {
+                return false;
+            }
+            ids.remove(conditionId);
+        }
+        if (ids.isEmpty()) {
+            return true;
+        }
+        throw new RuntimeException("not match " + ids);
+    }
+
+    public boolean isInConditionsIdsInRow(String ... matchedConditionsIds) {
+        Set<String> ids = new HashSet<>(conditionsIdsInRow);
+        for(String conditionsId : matchedConditionsIds) {
+            if (ids.contains(conditionsId) == false) {
+                return false;
+            }
+            ids.remove(conditionsId);
+        }
+        if (ids.isEmpty()) {
+            return true;
+        }
+        throw new RuntimeException("not match " + ids);
     }
 }

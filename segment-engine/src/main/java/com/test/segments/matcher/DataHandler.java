@@ -10,6 +10,9 @@ public interface DataHandler<T> {
     DataHandler<String> SOURCE_HANDLER = new EscapeHandler<String>() {
         @Override
         public String resolve(String target) {
+            if (target == null) {
+                return target;
+            }
             String lowered = target.toLowerCase();
             for (Map.Entry<String, String> entry : escapeSigns.entrySet()) {
                 if (lowered.contains(entry.getKey())) {

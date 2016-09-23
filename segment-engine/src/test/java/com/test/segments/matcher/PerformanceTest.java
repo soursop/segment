@@ -11,9 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class PerformanceTest {
@@ -47,7 +45,6 @@ public class PerformanceTest {
                 } else {
 
                 }
-//            System.out.println(String.format("time(%d) :%d", j, diff));
             }
         }
         stopwatch.stop();
@@ -67,6 +64,35 @@ public class PerformanceTest {
             }
         }
         System.out.println("took list " + stopwatch.elapsed(TimeUnit.MILLISECONDS) + " ms");
+    }
+
+    @Test
+    public void testGroupBy() {
+        int size = 200000;
+        int range = (size / 10);
+        Random generator = new Random();
+        int[] list = new int[size];
+        for(int i=0; i<size; i++) {
+            list[i] = generator.nextInt(range);
+        };
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        Map<Integer, Integer> group = new HashMap();
+        for (int id : list) {
+            if (group.containsKey(id)) {
+                group.put(id, group.get(id) + 1);
+            } else {
+                group.put(id, 1);
+            }
+        }
+        int count = 0;
+        for(Map.Entry<Integer, Integer> entry : group.entrySet()) {
+            if (entry.getValue() > 10) {
+                count++;
+            }
+        }
+        System.out.println(count);
+        System.out.println(group.size());
+        System.out.println("took group by " + stopwatch.elapsed(TimeUnit.MILLISECONDS) + " ms");
     }
 
 

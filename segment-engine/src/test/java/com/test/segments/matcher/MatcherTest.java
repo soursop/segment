@@ -2,9 +2,7 @@ package com.test.segments.matcher;
 
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
@@ -50,12 +48,22 @@ public class MatcherTest {
         };
         Matcher matcher = new Matcher(Parameter.of(DATA_SOURCE, conditionses));
 
-        assertThat("", matcher.findConditionsIds(new String[]{prop3Text3Condition.getId(), prop2Text2Condition.getId()}).getConditionsIds(),
-                is(containsInAnyOrder(conditions1.getId())));
-        assertThat("", matcher.findConditionsIds(new String[]{prop3Text3Condition.getId(), prop2Text1Condition.getId()}).getConditionsIds(),
-                not(containsInAnyOrder(conditions1.getId())));
-        assertThat("", matcher.findConditionsIds(new String[]{prop2Text2Condition.getId(), prop3Text1Condition.getId()}).getConditionsIds(),
-                is(containsInAnyOrder(conditions1.getId(), conditions2.getId())));
+        assertThat("", matcher.findConditionsIds(new String[]{prop3Text3Condition.getId(), prop2Text2Condition.getId()}).isInConditionsIds(conditions1.getId()),
+                is(true));
+        assertThat("", matcher.findConditionsIds(new String[]{prop3Text3Condition.getId(), prop2Text1Condition.getId()}).isInConditionsIds(conditions1.getId()),
+                is(false));
+        assertThat("", matcher.findConditionsIds(new String[]{prop2Text2Condition.getId(), prop3Text1Condition.getId()}).isInConditionsIds(conditions1.getId(), conditions2.getId()),
+                is(true));
+    }
+
+    @Test
+    public void testNullString() throws Exception {
+        Conditions[] conditionses = {
+                Conditions.of("6", Conditions.Conjunction.AND,
+                        prop1Text1Condition)
+        };
+        Matcher matcher = new Matcher(Parameter.of(DATA_SOURCE, conditionses, "20160902"));
+        matcher.findConditionIds(SourceHandler.STRING_SOURCE_HANDLER, new String[]{null}, 20160901);
     }
 
     @Test
@@ -76,11 +84,11 @@ public class MatcherTest {
         };
         Matcher matcher = new Matcher(Parameter.of(DATA_SOURCE, conditionses));
 
-        assertThat("", matcher.findConditionsIds(new String[]{prop1Text1Condition.getId(), prop2Text2Condition.getId()}).getConditionsIds(),
-                is(containsInAnyOrder(conditions2.getId())));
-        assertThat("", matcher.findConditionsIds(new String[]{prop1Text1Condition.getId(), prop2Text2Condition.getId(), prop3Text3Condition.getId()}).getConditionsIds(),
-                is(containsInAnyOrder(conditions1.getId(), conditions2.getId())));
-        assertThat("", matcher.findConditionsIds(new String[]{prop3Text3Condition.getId()}).getConditionsIds(), is(empty()));
+        assertThat("", matcher.findConditionsIds(new String[]{prop1Text1Condition.getId(), prop2Text2Condition.getId()}).isInConditionsIds(conditions2.getId()),
+                is(true));
+        assertThat("", matcher.findConditionsIds(new String[]{prop1Text1Condition.getId(), prop2Text2Condition.getId(), prop3Text3Condition.getId()}).isInConditionsIds(conditions1.getId(), conditions2.getId()),
+                is(true));
+        assertThat("", matcher.findConditionsIds(new String[]{prop3Text3Condition.getId()}).isInConditionsIds(), is(true));
     }
 
     @Test
@@ -105,8 +113,8 @@ public class MatcherTest {
         ConditionsIds conditionsIds1 = matcher.findConditionsIds(conditionIds1.toArray(new String[conditionIds1.size()]));
         List<String> conditionIds2 = matcher.findConditionIds(SourceHandler.STRING_SOURCE_HANDLER, new String[]{"text1", "text1", "text1"}, 20160321).getConditionIds();
         ConditionsIds conditionsIds2 = matcher.findConditionsIds(conditionIds2.toArray(new String[conditionIds2.size()]));
-        assertThat("", conditionsIds1.getConditionIds(), is(containsInAnyOrder(prop2Text2Condition.getId(), prop1Text1Condition.getId(), prop3Text3Condition.getId())));
-        assertThat("", conditionsIds2.getConditionIds(), is(containsInAnyOrder(prop3Text1Condition.getId(), prop2Text1Condition.getId(), prop1Text1Condition.getId())));
+        assertThat("", conditionsIds1.isInConditionIds(prop2Text2Condition.getId(), prop1Text1Condition.getId(), prop3Text3Condition.getId()), is(true));
+        assertThat("", conditionsIds2.isInConditionIds(prop3Text1Condition.getId(), prop2Text1Condition.getId(), prop1Text1Condition.getId()), is(true));
         assertThat("", matcher.findConditionIds(SourceHandler.STRING_SOURCE_HANDLER, new String[]{"text9", "text9", "text9"}, 20160411).getConditionIds(), is(empty()));
     }
 
@@ -132,8 +140,8 @@ public class MatcherTest {
         ConditionsIds conditionsIds1 = matcher.findConditionsIds(conditionIds1.toArray(new String[conditionIds1.size()]));
         List<String> conditionIds2 = matcher.findConditionIds(SourceHandler.STRING_SOURCE_HANDLER, new String[]{"text1", "text1", "text3"}, 20160228).getConditionIds();
         ConditionsIds conditionsIds2 = matcher.findConditionsIds(conditionIds2.toArray(new String[conditionIds1.size()]));
-        assertThat("", conditionsIds1.getConditionIds(), is(containsInAnyOrder(prop3Text3Condition.getId(), prop1Text1Condition.getId(), prop2Text2Condition.getId())));
-        assertThat("", conditionsIds2.getConditionIds(), is(containsInAnyOrder(prop1Text1Condition.getId(), prop2Text1Condition.getId())));
+        assertThat("", conditionsIds1.isInConditionIds(prop3Text3Condition.getId(), prop1Text1Condition.getId(), prop2Text2Condition.getId()), is(true));
+        assertThat("", conditionsIds2.isInConditionIds(prop1Text1Condition.getId(), prop2Text1Condition.getId()), is(true));
         assertThat("", matcher.findConditionIds(SourceHandler.STRING_SOURCE_HANDLER, new String[]{"text1", "text2", "text3"}, 20160226).getConditionIds(), is(containsInAnyOrder(prop1Text1Condition.getId() + ",")));
 
     }
@@ -161,7 +169,7 @@ public class MatcherTest {
         Matcher matcher = new Matcher(parameter);
         List<String> conditionIds = matcher.findConditionIds(SourceHandler.STRING_SOURCE_HANDLER, new String[]{"REQUEST"}, 20160406).getConditionIds();
         ConditionsIds conditionsIds = matcher.findConditionsIds(conditionIds.toArray(new String[conditionIds.size()]));
-        assertThat("", conditionsIds.getConditionIds(), is(containsInAnyOrder("2", "3")));
+        assertThat("", conditionsIds.isInConditionIds("2", "3"), is(true));
         assertThat("", matcher.getEqualsConditionId("3"), is(containsInAnyOrder("3", "4")));
         assertThat("", matcher.getEqualsConditionId("4"), is(containsInAnyOrder("3", "4")));
     }
@@ -235,40 +243,8 @@ public class MatcherTest {
         testMatchTime(matcher, conditionIds, new String[]{"CLICK", "리복 맞을까"}, 20160406);
 //        System.out.println(String.format("conditionIds %s", conditionIds));
         ConditionsIds conditionsIds = matcher.findConditionsIds(conditionIds.toArray(new String[conditionIds.size()]));
-        assertThat("", conditionsIds.getConditionsIdsInRow(), is(containsInAnyOrder("3", "4")));
-        assertThat("", conditionsIds.getConditionsIds(), is(containsInAnyOrder("1", "2", "3", "4", "5")));
-//        System.out.println(conditionsIds.getConditionIds());
-    }
-
-    @Test
-    public void testProfileConditions() throws Exception {
-        Matcher matcher = new Matcher(getRepeatFRequencyParameter());
-        for(int j=1; j<(300*10+1); j++) {
-            List<String> conditionIds = new ArrayList<>();
-            for (int i = 0; i < 10000; i++) {
-                testMatchTime(matcher, conditionIds, new String[]{"REQUEST", "나이키 신발" + i}, 20160406);
-                testMatchTime(matcher, conditionIds, new String[]{"CLICK", "신발은 나이키" + i}, 20160406);
-                testMatchTime(matcher, conditionIds, new String[]{"REQUEST", "신발은 크럭스" + i}, 20160406);
-                testMatchTime(matcher, conditionIds, new String[]{"CLICK", "리복 맞을까" + i}, 20160406);
-            }
-            long start = System.currentTimeMillis();
-//        System.out.println(String.format("conditionIds %s", conditionIds));
-            ConditionsIds conditionsIds = matcher.findConditionsIds(conditionIds.toArray(new String[conditionIds.size()]));
-            for(String id : conditionsIds.getConditionIds()) {
-            }
-            for(String id : conditionsIds.getConditionsIds()) {
-            }
-            for(String id : conditionsIds.getConditionsIdsInRow()) {
-            }
-//            assertThat("", conditionsIds.getConditionsIdsInRow(), is(containsInAnyOrder("3", "4")));
-//            assertThat("", conditionsIds.getConditionsIds(), is(containsInAnyOrder("1", "2", "3", "4", "5")));
-            if (j % 10 == 0) {
-                long stop = System.currentTimeMillis();
-                long diff = stop - start;
-                start = stop;
-                System.out.println(String.format("time(%d) :%d", j, diff));
-            }
-        }
+        assertThat("", conditionsIds.isInConditionsIdsInRow("3", "4"), is(true));
+        assertThat("", conditionsIds.isInConditionsIds("1", "2", "3", "4", "5"), is(true));
 //        System.out.println(conditionsIds.getConditionIds());
     }
 

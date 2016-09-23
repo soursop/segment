@@ -5,7 +5,7 @@ import java.util.*;
 public class FilteredCondition {
 
     private Set<Condition> conditions = new HashSet<>();
-    private List<Set<Condition>> conditionsGroupByRow = new LinkedList<>();
+    private List<Set<Condition>> conditionsGroupByRow = new ArrayList<>();
     private Set<String> conditionIdsSet = new HashSet<>();
 
     public FilteredCondition(String[] conditionIds, Map<String, Condition> conditionMapInDataSource) {
@@ -80,8 +80,8 @@ public class FilteredCondition {
         return conditions;
     }
 
-    public List<Set<Condition>> getConditionsGroupByRow() {
-        return conditionsGroupByRow;
+    public Set<Condition>[] getConditionsGroupByRow() {
+        return conditionsGroupByRow.toArray(new Set[conditionsGroupByRow.size()]);
     }
 
     public Set<String> getConditionIdsSet() {

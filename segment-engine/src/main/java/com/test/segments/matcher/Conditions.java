@@ -10,6 +10,7 @@ public class Conditions implements Conditionable {
     private String id;
     private Conjunction conjunction;
     private List<Conditionable> conditionables;
+    private int hashCode;
 
     public enum Conjunction {
         AND {
@@ -61,6 +62,7 @@ public class Conditions implements Conditionable {
         Conditions conditions = new Conditions(conjunction);
         conditions.id = id;
         conditions.conditionables = Arrays.asList(conditionables);
+        conditions.hashCode = conditions.getHashCode();
         return conditions;
     }
 
@@ -132,6 +134,10 @@ public class Conditions implements Conditionable {
 
     @Override
     public int hashCode() {
+        return hashCode;
+    }
+
+    private int getHashCode() {
         int result = conjunction != null ? conjunction.hashCode() : 0;
         result = 31 * result + (conditionables != null ? conditionables.hashCode() : 0);
         return result;
